@@ -23,7 +23,7 @@ import static com.mysocial.util.Constants.*;
 public class MySocialUtil {
 	
 	public static final int MONGODB_PORT = 27017;
-	public static final String MONGODB_HOST = "localhost";
+	public static final String MONGODB_HOST = "vm-amitaga-001";
 	
 	public static String MONGODB_URL = MONGODB_URL_PREFIX + MONGODB_HOST + ":" + Integer.toString(MONGODB_PORT);
 	

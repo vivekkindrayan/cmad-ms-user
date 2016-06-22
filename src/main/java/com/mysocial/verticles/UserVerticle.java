@@ -29,7 +29,7 @@ import io.vertx.ext.web.handler.ErrorHandler;
 public class UserVerticle extends AbstractVerticle {
 
 	public static final String VERTICLE_NAME = UserVerticle.class.getName();
-	public static final int HTTP_PORT = 9091;
+	public static final int HTTP_PORT = 7001;
 	
 	@Override
 	public void start(Future<Void> startFuture)
