@@ -48,6 +48,8 @@ public interface Constants {
 	public static final String CHAT_MESSAGE_TYPE_LOGIN = "UserLogin";
 	public static final String CHAT_MESSAGE_TYPE_CHAT = "chatMessage";
 	
+	public static final String AUTH_HEADER = "Authorization";
+	
 	public static final String RESPONSE_HEADER_CONTENT_TYPE = "content-type";
 	public static final String RESPONSE_HEADER_JSON = "application/json";
 	

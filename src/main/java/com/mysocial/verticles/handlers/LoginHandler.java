@@ -15,7 +15,6 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.http.HttpServerResponse;
-import io.vertx.ext.web.Cookie;
 import io.vertx.ext.web.RoutingContext;
 
 public class LoginHandler implements Handler<RoutingContext> {
@@ -49,8 +48,6 @@ public class LoginHandler implements Handler<RoutingContext> {
 					if (authenticated) {
 						User u = UserPersistence.getUserByUsername(auth.getUserName());
 						System.out.println("Authenticated successfully");
-						routingContext.removeCookie(COOKIE_HEADER);
-						routingContext.addCookie(Cookie.cookie(COOKIE_HEADER, u.getId().toHexString()));
 						response.setStatusCode(HttpResponseStatus.OK.code());
 						
 						MessageData md = new MessageData();
@@ -62,14 +59,12 @@ public class LoginHandler implements Handler<RoutingContext> {
 					} 
 					else {
 						System.err.println("Authentication failed");
-						routingContext.removeCookie(COOKIE_HEADER);
 						response.setStatusCode(HttpResponseStatus.FORBIDDEN.code());
 					}
 					response.end();
 				} 
 				else {
 					response.setStatusCode(HttpResponseStatus.BAD_REQUEST.code());
-					routingContext.removeCookie(COOKIE_HEADER);
 					response.end(resultHandler.cause().getMessage());
 					MySocialUtil.handleFailure(resultHandler, this.getClass());
 				}
