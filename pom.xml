@@ -81,7 +81,6 @@
     	</dependencies>
     </plugin>
         
-        
 </plugins>
   </build>
   <groupId>cmad-ms-user</groupId>
