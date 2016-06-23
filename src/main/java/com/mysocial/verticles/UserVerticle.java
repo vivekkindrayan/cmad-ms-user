@@ -5,6 +5,7 @@ import static com.mysocial.util.Constants.*;
 import com.mysocial.verticles.handlers.AllCompaniesHandler;
 import com.mysocial.verticles.handlers.AllDepartmentsHandler;
 import com.mysocial.verticles.handlers.AllSitesHandler;
+import com.mysocial.verticles.handlers.ChatHandler;
 import com.mysocial.verticles.handlers.CompanyHandler;
 import com.mysocial.verticles.handlers.DepartmentForSiteHandler;
 import com.mysocial.verticles.handlers.DepartmentHandler;
@@ -20,6 +21,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
+import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.http.HttpServer;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
@@ -46,7 +48,7 @@ public class UserVerticle extends AbstractVerticle {
 		stopFuture.complete();
 	}
 	
-	public void deploy(Vertx vertx, Router router) throws Exception
+	public void deploy(Vertx vertx, Router router, HttpServer server, EventBus eventBus) throws Exception
 	{
 		vertx.deployVerticle(VERTICLE_NAME, new Handler<AsyncResult<String>>() {
 			public void handle(AsyncResult<String> event) {
@@ -62,8 +64,10 @@ public class UserVerticle extends AbstractVerticle {
 				router.get(REST_URL_PREFIX + REST_URL_GET_SITES_FOR_COMPANY).handler(new SiteForCompanyHandler(vertx));
 				
 				router.post(REST_URL_PREFIX + REST_URL_REGISTER).handler(new RegisterHandler(vertx));
-				router.post(REST_URL_PREFIX + REST_URL_LOGIN).handler(new LoginHandler(vertx));
+				router.post(REST_URL_PREFIX + REST_URL_LOGIN).handler(new LoginHandler(vertx, eventBus));
 				router.get(REST_URL_PREFIX + REST_URL_LOAD_SIGNED_IN_USER).handler(new LoadUserHandler(vertx));
+
+				server.websocketHandler(new ChatHandler(vertx, eventBus)).listen(HTTP_PORT);
 				
 				System.out.println(VERTICLE_NAME + " deployment complete");
 			}
@@ -75,6 +79,7 @@ public class UserVerticle extends AbstractVerticle {
 		VertxOptions options = new VertxOptions().setWorkerPoolSize(DEFAULT_WORKER_POOL_SIZE);
 		Vertx vertx = Vertx.vertx(options);
 		HttpServer server = vertx.createHttpServer();
+		EventBus eventBus = vertx.eventBus();
 		Router router = Router.router(vertx);
 		
 		router.route().handler(CookieHandler.create());
@@ -82,7 +87,7 @@ public class UserVerticle extends AbstractVerticle {
 		router.route().failureHandler(ErrorHandler.create());
 		
 		UserVerticle uv = new UserVerticle();
-		uv.deploy(vertx, router);
+		uv.deploy(vertx, router, server, eventBus);
 		server.requestHandler(router::accept).listen(HTTP_PORT);
 	}
 }

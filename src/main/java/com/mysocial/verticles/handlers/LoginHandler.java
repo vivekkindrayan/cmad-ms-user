@@ -5,6 +5,7 @@ import static com.mysocial.util.Constants.*;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mysocial.beans.Auth;
+import com.mysocial.beans.MessageData;
 import com.mysocial.beans.User;
 import com.mysocial.db.UserPersistence;
 import com.mysocial.util.MySocialUtil;
@@ -12,6 +13,7 @@ import com.mysocial.util.MySocialUtil;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.Cookie;
 import io.vertx.ext.web.RoutingContext;
@@ -19,9 +21,11 @@ import io.vertx.ext.web.RoutingContext;
 public class LoginHandler implements Handler<RoutingContext> {
 
 	Vertx vertx;
+	EventBus eventBus;
 	
-	public LoginHandler(Vertx vertx) {
+	public LoginHandler(Vertx vertx, EventBus eb) {
 		this.vertx = vertx;
+		this.eventBus = eb;
 	}
 	
 	public void handle(RoutingContext routingContext) {
@@ -48,6 +52,13 @@ public class LoginHandler implements Handler<RoutingContext> {
 						routingContext.removeCookie(COOKIE_HEADER);
 						routingContext.addCookie(Cookie.cookie(COOKIE_HEADER, u.getId().toHexString()));
 						response.setStatusCode(HttpResponseStatus.OK.code());
+						
+						MessageData md = new MessageData();
+						md.setMessageType(CHAT_MESSAGE_TYPE_LOGIN);
+						md.setId(u.getUserName());
+						md.setFirst(u.getFirst());
+						md.setMessageObject("User Logged In");
+						eventBus.publish(EVENT_BUS_ADDRESS, md);
 					} 
 					else {
 						System.err.println("Authentication failed");
