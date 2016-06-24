@@ -34,7 +34,32 @@ public class UserVerticle extends AbstractVerticle {
 	@Override
 	public void start(Future<Void> startFuture)
 	{
+		VertxOptions options = new VertxOptions().setWorkerPoolSize(DEFAULT_WORKER_POOL_SIZE);
+		Vertx vertx = Vertx.vertx(options);
+		HttpServer server = vertx.createHttpServer();
+		Router router = Router.router(vertx);
+		
+		router.route().handler(CookieHandler.create());
+		router.route().handler(BodyHandler.create());
+		router.route().failureHandler(ErrorHandler.create());
+		
+		router.get(REST_URL_PREFIX + REST_URL_GET_COMPANIES).handler(new AllCompaniesHandler(vertx));
+		router.get(REST_URL_PREFIX + REST_URL_GET_COMPANY).handler(new CompanyHandler(vertx));
+		
+		router.get(REST_URL_PREFIX + REST_URL_GET_DEPARTMENTS).handler(new AllDepartmentsHandler(vertx));
+		router.get(REST_URL_PREFIX + REST_URL_GET_DEPARTMENT).handler(new DepartmentHandler(vertx));
+		router.get(REST_URL_PREFIX + REST_URL_GET_DEPTS_FOR_SITES).handler(new DepartmentForSiteHandler(vertx));
+		router.get(REST_URL_PREFIX + REST_URL_GET_SITES).handler(new AllSitesHandler(vertx));
+		router.get(REST_URL_PREFIX + REST_URL_GET_SITE).handler(new SiteHandler(vertx));
+		router.get(REST_URL_PREFIX + REST_URL_GET_SITES_FOR_COMPANY).handler(new SiteForCompanyHandler(vertx));
+		
+		router.post(REST_URL_PREFIX + REST_URL_REGISTER).handler(new RegisterHandler(vertx));
+		router.post(REST_URL_PREFIX + REST_URL_LOGIN).handler(new LoginHandler(vertx));
+		router.get(REST_URL_PREFIX + REST_URL_LOAD_SIGNED_IN_USER).handler(new LoadUserHandler(vertx));
+		
+		server.requestHandler(router::accept).listen(HTTP_PORT);
 		System.out.println(VERTICLE_NAME + " started");
+		
 		startFuture.complete();
 	}
 	
@@ -72,17 +97,6 @@ public class UserVerticle extends AbstractVerticle {
 	
 	public static void main(String[] args) throws Exception 
 	{
-		VertxOptions options = new VertxOptions().setWorkerPoolSize(DEFAULT_WORKER_POOL_SIZE);
-		Vertx vertx = Vertx.vertx(options);
-		HttpServer server = vertx.createHttpServer();
-		Router router = Router.router(vertx);
 		
-		router.route().handler(CookieHandler.create());
-		router.route().handler(BodyHandler.create());
-		router.route().failureHandler(ErrorHandler.create());
-		
-		UserVerticle uv = new UserVerticle();
-		uv.deploy(vertx, router);
-		server.requestHandler(router::accept).listen(HTTP_PORT);
 	}
 }
